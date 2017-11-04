@@ -16,6 +16,20 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-    </application>
 
+        <service android:name=".AuthenticatorService">
+            <intent-filter>
+                <action android:name="android.accounts.AccountAuthenticator" />
+            </intent-filter>
+            <meta-data
+                android:name="android.accounts.AccountAuthenticator"
+                android:resource="@xml/authenticator" />
+        </service>
+
+        <provider
+            android:name=".StubProvider"
+            android:authorities="com.example.kent.backgroundclient.provider"
+            android:exported="false"
+            android:syncable="true" />
+    </application>
 </manifest>
