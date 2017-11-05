@@ -69,3 +69,9 @@ def insert_gps(db_str, uuid, timestamp, lat, lon):
     # Clean up.
     cursor.close()
     db.close()
+
+def get_data_battery(db_str):
+    return {'test': 'hi'}
+
+def get_data_gps(db_str):
+    return {'test': 'hi'}

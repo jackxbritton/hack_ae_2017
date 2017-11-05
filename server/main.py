@@ -8,6 +8,20 @@ import backend
 
 app = flask.Flask(__name__)
 
+# Serving up JSON data.
+@app.route('/get_data', methods=['GET','POST'])
+def get_data():
+    # Check necessary parameters.
+    if 'type' not in flask.request.args:
+        return flask.jsonify({'error': 'No parameter *type*.'})
+    # Return jsonified data.
+    if flask.request.args['type'] == 'bat':
+        return flask.jsonify(backend.get_data_battery(db_str))
+    if flask.request.args['type'] == 'gps':
+        return flask.jsonify(backend.get_data_gps(db_str))
+    else:
+        return flask.jsonify({'error': 'Bad value for parameter *type*.'})
+
 @app.route('/bat', methods=['GET','POST'])
 def bat():
     # Check necessary parameters.
@@ -54,4 +68,4 @@ if __name__ == '__main__':
     # Put together the database connection string. Note the getpass()!
     db_str = 'user=\'' + sys.argv[1] + '\' host=\'' + sys.argv[2] + '\' dbname=\'' + sys.argv[3] + '\' password=\'' + getpass() + '\''
     # Run flask.
-    app.run()
+    app.run(host='0.0.0.0', debug=False)
