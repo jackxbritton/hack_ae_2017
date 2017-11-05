@@ -7,7 +7,6 @@ import android.content.ContentResolver;
 import android.content.Context;
 import android.content.pm.PackageManager;
 import android.location.Location;
-import android.media.TimedMetaData;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
@@ -27,7 +26,7 @@ import java.util.UUID;
 public class MainActivity extends AppCompatActivity implements GoogleApiClient.ConnectionCallbacks {
 
     public static final String ACCOUNT = "me";
-    public static final long SYNC_INTERVAL = 60L;
+    public static final long SYNC_INTERVAL = 15 * 60L;
 
     private final int PERMISSION_ACCESS_COARSE_LOCATION = 0;
     private static final String TAG = "MainActivity";
