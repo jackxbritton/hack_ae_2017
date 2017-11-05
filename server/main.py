@@ -11,16 +11,8 @@ app = flask.Flask(__name__)
 # Serving up JSON data.
 @app.route('/get_data', methods=['GET','POST'])
 def get_data():
-    # Check necessary parameters.
-    if 'type' not in flask.request.args:
-        return flask.jsonify({'error': 'No parameter *type*.'})
-    # Return jsonified data.
-    if flask.request.args['type'] == 'bat':
-        return flask.jsonify(backend.get_data_battery(db_str))
-    if flask.request.args['type'] == 'gps':
-        return flask.jsonify(backend.get_data_gps(db_str))
-    else:
-        return flask.jsonify({'error': 'Bad value for parameter *type*.'})
+    # TODO Check necessary parameters.
+    return flask.jsonify(backend.get_data(db_str))
 
 @app.route('/bat', methods=['GET','POST'])
 def bat():
@@ -55,6 +47,30 @@ def gps():
         db_str,
         flask.request.args['uuid'],
         flask.request.args['ts'],
+        flask.request.args['lat'],
+        flask.request.args['lon']
+    )
+    return 'Good.' # TODO Actual response.
+
+@app.route('/push', methods=['GET','POST'])
+def push():
+    # Check necessary parameters.
+    if 'uuid' not in flask.request.args:
+        return '' # TODO Actual error code.
+    if 'ts' not in flask.request.args:
+        return '' # TODO Actual error code.
+    if 'bat' not in flask.request.args:
+        return '' # TODO Actual error code.
+    if 'lat' not in flask.request.args:
+        return '' # TODO Actual error code.
+    if 'lon' not in flask.request.args:
+        return '' # TODO Actual error code.
+    # GPS.
+    backend.insert(
+        db_str,
+        flask.request.args['uuid'],
+        flask.request.args['ts'],
+        flask.request.args['bat'],
         flask.request.args['lat'],
         flask.request.args['lon']
     )
