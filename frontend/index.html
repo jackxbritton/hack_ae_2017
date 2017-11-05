@@ -4,55 +4,148 @@
 
 <head>
 
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
 <meta charset="utf-8"/>
+<title>EnerGPS</title>
 <link href="third_party/css/bootstrap.min.css" rel="stylesheet">
 <script src="third_party/js/jquery-3.2.1.min.js"></script>
 <script src="third_party/js/popper.min.js"></script>
 <script src="third_party/js/bootstrap.min.js"></script>
 <script src="third_party/js/d3.min.js"></script>
 
-<style></style>
+<style>
+#map {
+    height: 100%;
+    width: 80%;
+    margin: auto;
+}
+html, body {
+    height: 100%;
+    margin: 0;
+    padding: 0;
+}
+.modal {
+    width: 700px;
+}
+</style>
 
 </head>
 
 <body>
 
+    <div class="jumbotron">
+        <div class="container">
+            <h1 class="display-3"><strong>EnerGPS</strong></h1>
+            <p class="lead">Analyzing smartphone data to learn more about exercising trends and power consumption.</p>
+            <hr class="my-4">
+            <p class="lead">
+            <a class="btn btn-primary btn-lg" href="https://github.com/jackxbritton/hack_ae_2017/" role="button">Check us out on <strong>GitHub</strong></a>
+            </p>
+        </div>
+    </div>
+
+    <div id="map"></div>
+
+    <!--div class="modal fade" id="graph_modal">
+        <div class="modal-dialog" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Battery Levels of Graph</h5>
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <svg id="graph"></svg>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary">Save changes</button>
+                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+    </div-->
+
 <script>
 
-$.get("http://ec2-35-164-1-247.us-west-2.compute.amazonaws.com:5000/get_data", function(response) {
-    if (response.length == 0)  return;
-    // Convert response into graph-able data.
-    //  [
-    //      {
-    //          id: id,
-    //          data: [
-    //              [x1, y1],
-    //              [x2, y2],
-    //              ...
-    //          ]
-    //      }
-    //  ]
-    var last_index = 0;
-    var last_id = response[0].id;
-    var data = [{id: response[0].id, data: [[new Date(response[0].ts), response[0].bat]]}];
-    for (let i = 1; i < response.length; i++) {
-        const x = response[i];
-        if (!x.bat) continue;
-        if (x.id == data[last_index].id) {
-            data[last_index].data.push([new Date(x.ts), x.bat]);
-        } else {
-            data.push({id: x.id, data: [[new Date(x.ts), x.bat]]});
-            last_index++;
+  function initMap() {
+
+    var map = new google.maps.Map(document.getElementById('map'), {
+      zoom: 8,
+      center: {lat: 42.6310, lng: -71.3000}
+    });
+
+    // Create an array of alphabetical characters used to label the markers.
+    var labels = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+
+    // Add some markers to the map.
+    // Note: The code uses the JavaScript Array.prototype.map() method to
+    // create an array of markers based on a given "locations" array.
+    // The map() method here has nothing to do with the Google Maps API.
+    var markers = locations.map(function(location, i) {
+      return new google.maps.Marker({
+        position: location,
+        label: labels[i % labels.length]
+      });
+    });
+
+    // Add a marker clusterer to manage the markers.
+    var markerCluster = new MarkerClusterer(map, markers,
+        {zoomOnClick: false, imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'});
+
+    google.maps.event.addListener(markerCluster, 'clusterclick', function(cluster) {
+        $("#graph_modal").modal("show");
+        get_data();
+    }); 
+  }
+
+  var locations = [
+    {lat: 42.6486486486486, lng: -71.3349992130852},
+    {lat: 42.6306306306306, lng: -71.3388351719733},
+    {lat: 42.6306306306806, lng: -71.3388351719783},
+  ]
+</script>
+<script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js"></script>
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=API_KEY&callback=initMap"></script>
+
+<script>
+
+function get_data() {
+    $.get("http://ec2-35-164-1-247.us-west-2.compute.amazonaws.com:5000/get_data", function(response) {
+        if (response.length == 0)  return;
+        // Convert response into graph-able data.
+        //  [
+        //      {
+        //          id: id,
+        //          data: [
+        //              [x1, y1],
+        //              [x2, y2],
+        //              ...
+        //          ]
+        //      }
+        //  ]
+        var last_index = 0;
+        var last_id = response[0].id;
+        var data = [{id: response[0].id, data: [[new Date(response[0].ts), response[0].bat]]}];
+        for (let i = 1; i < response.length; i++) {
+            const x = response[i];
+            if (!x.bat) continue;
+            if (x.id == data[last_index].id) {
+                data[last_index].data.push([new Date(x.ts), x.bat]);
+            } else {
+                data.push({id: x.id, data: [[new Date(x.ts), x.bat]]});
+                last_index++;
+            }
         }
-    }
-    graph(data)
-});
+        graph(data)
+    });
+}
 
 function graph(data) {
 
     // Margins, widths, and height.
     const margin = {top: 20, right: 20, bottom: 50, left: 50};
-    const width = 960 - margin.left - margin.right;
+    const width = window.innerWidth-100 - margin.left - margin.right;
     const height = 500 - margin.top - margin.bottom;
     // Scales.
     var x = d3.scaleTime().range([0, width]);
@@ -62,7 +155,8 @@ function graph(data) {
         .x(function(d) { return x(d[0]); })
         .y(function(d) { return y(d[1]); });
     // DOM stuff.
-    var svg = d3.select("body").append("svg")
+    //var svg = d3.select("body").append("svg")
+    var svg = d3.select("#graph")
         .attr("width", width + margin.left + margin.right)
         .attr("height", height + margin.top + margin.bottom)
         .append("g")
@@ -106,6 +200,8 @@ function graph(data) {
 }
 
 </script>
+
+<svg id="graph"></svg>
 
 </body>
 
