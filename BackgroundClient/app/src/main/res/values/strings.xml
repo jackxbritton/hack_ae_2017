@@ -5,5 +5,7 @@
 
     <string name="account_type">example.com</string>
     <string name="content_authority">com.example.kent.backgroundclient.provider</string>
+
     <string name="id_file_name">user_id_file.txt</string>
+    <string name="coordinates_file_name">coordinates.txt</string>
 </resources>

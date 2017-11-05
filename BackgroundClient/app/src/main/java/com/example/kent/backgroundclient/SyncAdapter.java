@@ -3,7 +3,6 @@ package com.example.kent.backgroundclient;
 import android.accounts.Account;
 import android.content.AbstractThreadedSyncAdapter;
 import android.content.ContentProviderClient;
-import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
@@ -29,20 +28,16 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
     private final String TAG = "SyncAdapter";
     private final String SYNC_URL = "http://www.google.com?";
     private final String SYNC_USER_SIG = "sig=";
+    private final String SYN_LAT = "lat=";
+    private final String SYN_LON = "lon=";
     private final String SYNC_BATTERY_LEVEL = "batteryLevel=";
-
-    private ContentResolver m_contentResolver;
 
     public SyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
-
-        m_contentResolver = context.getContentResolver();
     }
 
     public SyncAdapter(Context context, boolean autoInitialize, boolean allowParallelSyncs) {
         super(context, autoInitialize, allowParallelSyncs);
-
-        m_contentResolver = context.getContentResolver();
     }
 
     @Override
@@ -51,16 +46,43 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
         Context context = getContext();
 
+        // Build get request
+        String url = SYNC_URL;
+
         // Get user id
-        String filename = context.getString(R.string.id_file_name);
-        File file = new File(context.getFilesDir(), filename);
+        String id_filename = context.getString(R.string.id_file_name);
+        File id_file = new File(context.getFilesDir(), id_filename);
         String id = "";
         try {
-            BufferedReader br = new BufferedReader(new FileReader(file));
+            BufferedReader br = new BufferedReader(new FileReader(id_file));
             id = br.readLine();
-            Log.e(TAG, "User id: " + id);
+            Log.e(TAG, "Id: " + id);
         } catch (IOException e) {
             e.printStackTrace();
+        }
+        url = url.concat(SYNC_USER_SIG).concat(id);
+
+        // Read coordinates from file since it takes a while to get a location fix
+        // Coordinates are saved to a file every interval and read at the next interval
+        String coordinates_filename = context.getString(R.string.coordinates_file_name);
+        File coordinates_file = new File(context.getFilesDir(), coordinates_filename);
+        String coordinates = "";
+        try {
+            BufferedReader br = new BufferedReader(new FileReader(coordinates_file));
+            coordinates = br.readLine();
+            Log.e(TAG, "Coordinates: " + coordinates);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        if (!coordinates.equals("")) {
+            String[] coords = coordinates.split(",");
+            double lat = Double.valueOf(coords[0]);
+            double lon = Double.valueOf(coords[1]);
+            Log.e(TAG, "lat: " + lat + ", lon: " + lon);
+
+            url = url.concat("&").concat(SYN_LAT).concat(String.valueOf(lat))
+                    .concat("&").concat(SYN_LON).concat(String.valueOf(lon));
         }
 
         // Get battery status
@@ -74,11 +96,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         int level = batteryStatus.getIntExtra(BatteryManager.EXTRA_LEVEL, -1);
         int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
         float batteryPct = level * 100.0f / scale;
+        Log.e(TAG, "Battery percentage: " + batteryPct);
 
-        // Build get request
-        String url = SYNC_URL.concat(SYNC_USER_SIG).concat(id).concat(SYNC_BATTERY_LEVEL).concat(String.valueOf(batteryPct));
+        url = url.concat("&").concat(SYNC_BATTERY_LEVEL).concat(String.valueOf(batteryPct));
+
         Log.e(TAG, "Request: " + url);
-
         RequestQueue queue = Volley.newRequestQueue(context);
         StringRequest stringRequest = new StringRequest(Request.Method.GET, url,
                 new Response.Listener<String>() {
