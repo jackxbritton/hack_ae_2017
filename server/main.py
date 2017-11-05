@@ -13,7 +13,6 @@ flask_cors.CORS(app)
 # Serving up JSON data.
 @app.route('/get_data', methods=['GET','POST'])
 def get_data():
-    # TODO Check necessary parameters.
     return flask.jsonify(backend.get_data(db_str))
 
 @app.route('/bat', methods=['GET','POST'])
