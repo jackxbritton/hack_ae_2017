@@ -58,6 +58,7 @@ def insert_gps(db_str, uuid, timestamp, lat, lon):
         db = psycopg2.connect(db_str)
     except Exception as e:
         print('Error: ' + str(e))
+        return
     cursor = db.cursor()
     # Get id.
     id = uuid_to_id(cursor, uuid)
@@ -87,12 +88,13 @@ def insert(db_str, uuid, timestamp, bat, lat, lon):
         db = psycopg2.connect(db_str)
     except Exception as e:
         print('Error: ' + str(e))
+        return
     cursor = db.cursor()
     # Get id.
     id = uuid_to_id(cursor, uuid)
     # Insert bat row.
     cursor.execute(
-        'INSERT INTO battery (bat, timestamp, user_id) VALUES (%s, %s, %s)',
+        'INSERT INTO battery (level, timestamp, user_id) VALUES (%s, %s, %s)',
         (bat, timestamp, id)
     )
     # Insert GPS row.
@@ -111,6 +113,7 @@ def get_data(db_str):
         db = psycopg2.connect(db_str)
     except Exception as e:
         print('Error: ' + str(e))
+        return
     cursor = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
     # Select all.
     cursor.execute("""
