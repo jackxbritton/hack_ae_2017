@@ -113,6 +113,7 @@ html, body {
 <script>
 
 function get_data() {
+    console.log("a");
     $.get("http://ec2-35-164-1-247.us-west-2.compute.amazonaws.com:5000/get_data", function(response) {
         if (response.length == 0)  return;
         // Convert response into graph-able data.
@@ -165,9 +166,11 @@ function graph(data) {
         .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
     // Scale the range of the data
     const x_min = d3.min(data, d => d3.min(d.data, x => x[0]));
-    const x_max = d3.max(data, d => d3.max(d.data, x => x[0]));
+    const x_max = Date.now();
     x.domain([x_min, x_max]);
     y.domain([0, 100]);
+    // Clear all paths.
+    svg.select("*").remove();
     // Add the valueline path.
     for (let i = 0; i < data.length; i++) {
         svg.append("path")
