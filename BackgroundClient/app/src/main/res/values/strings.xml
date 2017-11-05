@@ -2,4 +2,8 @@
     <string name="app_name">BackgroundClient</string>
 
     <string name="intro_text">Thanks for sharing your data.</string>
+
+    <string name="account_type">example.com</string>
+    <string name="content_authority">com.example.kent.backgroundclient.provider</string>
+    <string name="id_file_name">user_id_file.txt</string>
 </resources>
