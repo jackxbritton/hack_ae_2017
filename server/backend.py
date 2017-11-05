@@ -58,23 +58,6 @@ def insert_gps(db_str, uuid, timestamp, lat, lon):
     except Exception as e:
         print('Error: ' + str(e))
     cursor = db.cursor()
-
-    # Parse inputs.
-    try:
-        uuid = str(UUID(uuid))
-        timestamp = int(timestamp)
-        lat = float(lat)
-        lon = float(lon)
-    except:
-        print('Couldn\'t parse inputs in insert_gps()')
-        return
-    # Connect to the database.
-    try:
-        db = psycopg2.connect(db_str)
-    except Exception as e:
-        print('Error: ' + str(e))
-        return
-    cursor = db.cursor()
     # Get id.
     id = uuid_to_id(cursor, uuid)
     # Insert GPS row.
