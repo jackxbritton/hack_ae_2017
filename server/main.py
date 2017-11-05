@@ -1,12 +1,14 @@
 #!/usr/bin/env python
 
 import flask
+import flask_cors
 import sys
 from getpass import getpass
 
 import backend
 
 app = flask.Flask(__name__)
+flask_cors.CORS(app)
 
 # Serving up JSON data.
 @app.route('/get_data', methods=['GET','POST'])
