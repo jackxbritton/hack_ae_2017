@@ -102,7 +102,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         Log.e(TAG, "Battery percentage: " + batteryPct);
         url = url.concat("&").concat(SYNC_BATTERY_LEVEL).concat(String.valueOf(batteryPct));
 
-        long ts = System.currentTimeMillis() / 1000;
+        long ts = System.currentTimeMillis();
         Log.e(TAG, "Timestamp: " + ts);
         url = url.concat("&").concat(SYNC_TIMESTAMP).concat(String.valueOf(ts));
 
