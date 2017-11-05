@@ -24,8 +24,12 @@ html, body {
     margin: 0;
     padding: 0;
 }
-.modal {
-    width: 700px;
+#graph_modal .modal-dialog {
+    width: 700px !important;
+    max-width: 700px !important;
+}
+#graph_modal_dialog {
+    width: 900px;
 }
 </style>
 
@@ -45,26 +49,6 @@ html, body {
     </div>
 
     <div id="map"></div>
-
-    <!--div class="modal fade" id="graph_modal">
-        <div class="modal-dialog" role="document">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 class="modal-title">Battery Levels of Graph</h5>
-                    <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-                        <span aria-hidden="true">&times;</span>
-                    </button>
-                </div>
-                <div class="modal-body">
-                    <svg id="graph"></svg>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-primary">Save changes</button>
-                    <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
-                </div>
-            </div>
-        </div>
-    </div-->
 
 <script>
 
@@ -94,7 +78,6 @@ html, body {
         {zoomOnClick: false, imagePath: 'https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/m'});
 
     google.maps.event.addListener(markerCluster, 'clusterclick', function(cluster) {
-        $("#graph_modal").modal("show");
         get_data();
     }); 
   }
@@ -107,6 +90,25 @@ html, body {
 </script>
 <script src="https://developers.google.com/maps/documentation/javascript/examples/markerclusterer/markerclusterer.js"></script>
 <script async defer src="https://maps.googleapis.com/maps/api/js?key=API_KEY&callback=initMap"></script>
+
+<div class="modal fade" id="graph_modal">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Battery Levels</h5>
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                <svg id="graph">Modal body text goes here.</svg>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-primary" data-dismiss="modal">Ok</button>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script>
 
@@ -145,7 +147,7 @@ function graph(data) {
 
     // Margins, widths, and height.
     const margin = {top: 20, right: 20, bottom: 50, left: 50};
-    const width = window.innerWidth-100 - margin.left - margin.right;
+    const width = 600 - margin.left - margin.right;
     const height = 500 - margin.top - margin.bottom;
     // Scales.
     var x = d3.scaleTime().range([0, width]);
@@ -197,11 +199,32 @@ function graph(data) {
         .attr("dy", "1em")
         .style("text-anchor", "middle")
         .text("Battery Level");   
+
+    $("#graph_modal").modal("show");
 }
 
 </script>
 
-<svg id="graph"></svg>
+<br><br>
+
+<div class="container">
+<div class="row" style="background-color: #cccccc;">
+    <div class="col-lg">
+        <h1><strong>Created by</strong></h1>
+    </div>
+</div>
+<div class="row">
+    <div class="col-sm" style="background-color: #f4d442;">
+        <h2>Jack Britton</h2>
+    </div>
+    <div class="col-sm" style="background-color: #890418; color: #efecd7;">
+        <h2>Austin Kidder</h2>
+    </div>
+    <div class="col-sm" style="background-color: #41c1f4;">
+        <h2>Kent Seneres</h2>
+    </div>
+</div>
+</div>
 
 </body>
 
