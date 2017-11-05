@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import psycopg2
+import psycopg2.extras
 from uuid import UUID
 
 def uuid_to_id(cursor, uuid):
@@ -57,6 +58,7 @@ def insert_gps(db_str, uuid, timestamp, lat, lon):
         db = psycopg2.connect(db_str)
     except Exception as e:
         print('Error: ' + str(e))
+        return
     cursor = db.cursor()
     # Get id.
     id = uuid_to_id(cursor, uuid)
@@ -70,8 +72,66 @@ def insert_gps(db_str, uuid, timestamp, lat, lon):
     cursor.close()
     db.close()
 
-def get_data_battery(db_str):
-    return {'test': 'hi'}
+def insert(db_str, uuid, timestamp, bat, lat, lon):
+    # Parse inputs.
+    try:
+        uuid = str(UUID(uuid))
+        timestamp = int(timestamp)
+        bat = float(bat)
+        lat = float(lat)
+        lon = float(lon)
+    except:
+        print('Couldn\'t parse inputs in insert()')
+        return
+    # Connect to the database.
+    try:
+        db = psycopg2.connect(db_str)
+    except Exception as e:
+        print('Error: ' + str(e))
+        return
+    cursor = db.cursor()
+    # Get id.
+    id = uuid_to_id(cursor, uuid)
+    # Insert bat row.
+    cursor.execute(
+        'INSERT INTO battery (level, timestamp, user_id) VALUES (%s, %s, %s)',
+        (bat, timestamp, id)
+    )
+    # Insert GPS row.
+    cursor.execute(
+        'INSERT INTO gps (lat, lon, timestamp, user_id) VALUES (%s, %s, %s, %s)',
+        (lat, lon, timestamp, id)
+    )
+    db.commit()
+    # Clean up.
+    cursor.close()
+    db.close()
 
-def get_data_gps(db_str):
-    return {'test': 'hi'}
+def get_data(db_str):
+    # Connect to the database.
+    try:
+        db = psycopg2.connect(db_str)
+    except Exception as e:
+        print('Error: ' + str(e))
+        return
+    cursor = db.cursor(cursor_factory=psycopg2.extras.DictCursor)
+    # Select all.
+    cursor.execute("""
+        SELECT
+            COALESCE(battery.user_id, gps.user_id) AS id,
+            COALESCE(battery.timestamp, gps.timestamp) AS ts,
+            battery.level AS bat,
+            gps.lon, gps.lat
+        FROM battery
+        FULL OUTER JOIN gps ON battery.user_id = gps.user_id
+                           AND battery.timestamp = gps.timestamp
+    """)
+    result = cursor.fetchall()
+    # Clean up.
+    cursor.close()
+    db.close()
+    # Create dict.
+    out = []
+    for row in result:
+        out.append(dict(row))
+    return out
