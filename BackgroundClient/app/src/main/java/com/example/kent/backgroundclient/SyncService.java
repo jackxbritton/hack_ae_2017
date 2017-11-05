@@ -15,7 +15,6 @@ import android.util.Log;
 import com.google.android.gms.common.api.GoogleApiClient;
 import com.google.android.gms.location.LocationServices;
 
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 

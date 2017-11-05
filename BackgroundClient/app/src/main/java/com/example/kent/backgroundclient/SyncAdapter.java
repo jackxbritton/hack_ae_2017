@@ -26,11 +26,14 @@ import java.io.IOException;
 public class SyncAdapter extends AbstractThreadedSyncAdapter {
 
     private final String TAG = "SyncAdapter";
-    private final String SYNC_URL = "http://www.google.com?";
-    private final String SYNC_USER_SIG = "sig=";
+
+    private final String SYNC_URL = "http://ec2-35-164-1-247.us-west-2.compute.amazonaws.com:5000";
+    private final String SYNC_ENDPOINT = "/push?";
+    private final String SYNC_UUID = "uuid=";
     private final String SYN_LAT = "lat=";
     private final String SYN_LON = "lon=";
-    private final String SYNC_BATTERY_LEVEL = "batteryLevel=";
+    private final String SYNC_BATTERY_LEVEL = "bat=";
+    private final String SYNC_TIMESTAMP = "ts=";
 
     public SyncAdapter(Context context, boolean autoInitialize) {
         super(context, autoInitialize);
@@ -47,7 +50,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         Context context = getContext();
 
         // Build get request
-        String url = SYNC_URL;
+        String url = SYNC_URL.concat(SYNC_ENDPOINT);
 
         // Get user id
         String id_filename = context.getString(R.string.id_file_name);
@@ -60,7 +63,7 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         } catch (IOException e) {
             e.printStackTrace();
         }
-        url = url.concat(SYNC_USER_SIG).concat(id);
+        url = url.concat(SYNC_UUID).concat(id);
 
         // Read coordinates from file since it takes a while to get a location fix
         // Coordinates are saved to a file every interval and read at the next interval
@@ -97,8 +100,11 @@ public class SyncAdapter extends AbstractThreadedSyncAdapter {
         int scale = batteryStatus.getIntExtra(BatteryManager.EXTRA_SCALE, -1);
         float batteryPct = level * 100.0f / scale;
         Log.e(TAG, "Battery percentage: " + batteryPct);
-
         url = url.concat("&").concat(SYNC_BATTERY_LEVEL).concat(String.valueOf(batteryPct));
+
+        long ts = System.currentTimeMillis() / 1000;
+        Log.e(TAG, "Timestamp: " + ts);
+        url = url.concat("&").concat(SYNC_TIMESTAMP).concat(String.valueOf(ts));
 
         Log.e(TAG, "Request: " + url);
         RequestQueue queue = Volley.newRequestQueue(context);
