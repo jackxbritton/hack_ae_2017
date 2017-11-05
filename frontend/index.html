@@ -11,18 +11,99 @@
 <script src="third_party/js/bootstrap.min.js"></script>
 <script src="third_party/js/d3.min.js"></script>
 
+<style></style>
+
 </head>
 
 <body>
 
-<p>Hi there boyo</p>
-
 <script>
 
-$.get("localhost://ec2-35-164-1-247.us-west-2.compute.amazonaws.com:5000/get_data", function(response) {
-    let data = JSON.parse(response);
-    console.log(data);
+$.get("http://ec2-35-164-1-247.us-west-2.compute.amazonaws.com:5000/get_data", function(response) {
+    if (response.length == 0)  return;
+    // Convert response into graph-able data.
+    //  [
+    //      {
+    //          id: id,
+    //          data: [
+    //              [x1, y1],
+    //              [x2, y2],
+    //              ...
+    //          ]
+    //      }
+    //  ]
+    var last_index = 0;
+    var last_id = response[0].id;
+    var data = [{id: response[0].id, data: [[new Date(response[0].ts), response[0].bat]]}];
+    for (let i = 1; i < response.length; i++) {
+        const x = response[i];
+        if (!x.bat) continue;
+        if (x.id == data[last_index].id) {
+            data[last_index].data.push([new Date(x.ts), x.bat]);
+        } else {
+            data.push({id: x.id, data: [[new Date(x.ts), x.bat]]});
+            last_index++;
+        }
+    }
+    graph(data)
 });
+
+function graph(data) {
+
+    // Margins, widths, and height.
+    const margin = {top: 20, right: 20, bottom: 50, left: 50};
+    const width = 960 - margin.left - margin.right;
+    const height = 500 - margin.top - margin.bottom;
+    // Scales.
+    var x = d3.scaleTime().range([0, width]);
+    var y = d3.scaleLinear().range([height, 0]);
+    // Line.
+    var valueline = d3.line()
+        .x(function(d) { return x(d[0]); })
+        .y(function(d) { return y(d[1]); });
+    // DOM stuff.
+    var svg = d3.select("body").append("svg")
+        .attr("width", width + margin.left + margin.right)
+        .attr("height", height + margin.top + margin.bottom)
+        .append("g")
+        .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+    // Scale the range of the data
+    const x_min = d3.min(data, d => d3.min(d.data, x => x[0]));
+    const x_max = d3.max(data, d => d3.max(d.data, x => x[0]));
+    x.domain([x_min, x_max]);
+    y.domain([0, 100]);
+    // Add the valueline path.
+    for (let i = 0; i < data.length; i++) {
+        svg.append("path")
+            .attr("d", valueline(data[i].data))
+            .attr("class", "line")
+            .attr("stroke-width", 3)
+            .attr("fill", "none")
+            .attr("stroke", "steelblue");
+    }
+
+    // Add the X Axis
+    svg.append("g")
+        .attr("transform", "translate(0," + height + ")")
+        .call(d3.axisBottom(x));
+    // text label for the x axis
+    svg.append("text")             
+        .attr("transform", "translate(" + (width/2) + " ," + (height + margin.top + 20) + ")")
+        .style("text-anchor", "middle")
+        .text("Date / Time");
+
+    // Add the Y Axis
+    svg.append("g")
+        .call(d3.axisLeft(y));
+    // text label for the y axis
+    svg.append("text")
+        .attr("transform", "rotate(-90)")
+        .attr("y", 0 - margin.left)
+        .attr("x",0 - (height / 2))
+        .attr("dy", "1em")
+        .style("text-anchor", "middle")
+        .text("Battery Level");   
+}
 
 </script>
 
