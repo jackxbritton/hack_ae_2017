@@ -125,7 +125,7 @@ def get_data(db_str):
         FROM battery
         FULL OUTER JOIN gps ON battery.user_id = gps.user_id
                            AND battery.timestamp = gps.timestamp
-        ORDER BY user_id
+        ORDER BY id, ts
     """)
     result = cursor.fetchall()
     # Clean up.
